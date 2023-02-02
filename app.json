@@ -1,16 +1,17 @@
 {
   "expo": {
-    "name": "woogie-client-dev",
-    "slug": "woogie-client-dev",
-    "version": "1.0.0",
+    "name": "woogie",
+    "slug": "woogie",
+    "version": "1.11.1",
     "scheme": "woogie",
+    "originalFullName": "@bochenko/woogie",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#5C85FF"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
@@ -20,7 +21,8 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.woogie.app"
+      "bundleIdentifier": "com.woogie.app",
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
