@@ -1,17 +1,17 @@
-import React, { useReducer, useEffect, useMemo, useRef, useCallback } from 'react'
+import React, { useReducer, useEffect, useMemo, useRef } from 'react'
 import { useColorScheme } from 'react-native'
 import { NavigationContainer } from '@react-navigation/native'
 import * as SplashScreen from 'expo-splash-screen'
 import * as Notifications from 'expo-notifications'
 import * as SecureStore from 'expo-secure-store'
-import * as Font from 'expo-font'
-import { Lato_400Regular, Lato_700Bold } from '@expo-google-fonts/lato'
+import { useFonts } from 'expo-font'
 import { Provider } from 'urql'
 import { AppContext } from 'lib/AppContext'
 import { gqlClient, apiClient } from 'lib/Client'
 import { registerForPushNotificationsAsync } from 'lib/Notification'
 import { getLocation } from 'lib/Location'
 import { MyDarkTheme, MyLightTheme } from 'constants/Colors'
+import { fonts } from 'constants/Fonts'
 import { RootNavigator } from 'screens/RootNavigator'
 import LoginNavigator from 'screens/login/LoginNavigator'
 
@@ -41,8 +41,8 @@ export default () => {
         case 'SIGN_IN':
           return {
             ...prevState,
-            isLoading: false,
             ...action.data,
+            isLoading: false,
           }
         case 'SIGN_OUT':
           return {
@@ -61,18 +61,26 @@ export default () => {
     const notificationListener = useRef()
     const responseListener = useRef()
 
+    // Returns false on rerender
+    const [fontsLoaded] = useFonts(fonts)
     const colorScheme = useColorScheme()
 
     const api = apiClient(state.token)
     const client = gqlClient(state.token)
 
+    const linking = {
+      prefixes: ['https://woogie.com', 'woogie://'],
+      config: {
+        screens: {
+          Home: 'Root',
+        },
+      },
+    }
+
     const loginWithToken = async () => {
       let shouldSignOut = true
       const token = await SecureStore.getItemAsync('token')
-      await Font.loadAsync({
-        Lato_400Regular,
-        Lato_700Bold
-      })
+      // await Font.loadAsync(fonts)
       if (token) {
         const pushToken = await registerForPushNotificationsAsync()
         const { status, data } = await api.post(`login`, {token, pushToken})
@@ -142,17 +150,7 @@ export default () => {
 
     }), [state])
 
-    const linking = {
-      prefixes: ['https://woogie.com', 'woogie://'],
-      config: {
-        screens: {
-          Home: 'Root',
-        },
-      },
-    }
-
-    // Returns false on rerender
-    if (state.isLoading) return null;
+    if (state.isLoading || !fontsLoaded) return null
 
     return (
       <NavigationContainer
