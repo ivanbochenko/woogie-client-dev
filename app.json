@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "woogie",
-    "slug": "woogie",
+    "name": "woogie-client-dev",
+    "slug": "woogie-client-dev",
     "version": "1.11.1",
     "scheme": "woogie",
     "originalFullName": "@bochenko/woogie",
