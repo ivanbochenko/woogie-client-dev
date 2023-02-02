@@ -4,7 +4,8 @@ import { NavigationContainer } from '@react-navigation/native'
 import * as SplashScreen from 'expo-splash-screen'
 import * as Notifications from 'expo-notifications'
 import * as SecureStore from 'expo-secure-store'
-import { useFonts, Lato_400Regular, Lato_700Bold } from '@expo-google-fonts/lato'
+import * as Font from 'expo-font'
+import { Lato_400Regular, Lato_700Bold } from '@expo-google-fonts/lato'
 import { Provider } from 'urql'
 import { AppContext } from 'lib/AppContext'
 import { gqlClient, apiClient } from 'lib/Client'
@@ -68,6 +69,10 @@ export default () => {
     const loginWithToken = async () => {
       let shouldSignOut = true
       const token = await SecureStore.getItemAsync('token')
+      await Font.loadAsync({
+        Lato_400Regular,
+        Lato_700Bold
+      })
       if (token) {
         const pushToken = await registerForPushNotificationsAsync()
         const { status, data } = await api.post(`login`, {token, pushToken})
@@ -145,27 +150,14 @@ export default () => {
         },
       },
     }
-    
-    const [fontsLoaded, fontsError] = useFonts({
-      Lato_400Regular,
-      Lato_700Bold
-    });
 
-    const onReady = useCallback(async () => {
-      if (fontsLoaded) {
-        await SplashScreen.hideAsync();
-      }
-    }, [fontsLoaded]);
-
-    // Debug
-    apiClient().post('error', {fontsLoaded, fontsError})
-
-    if (!fontsLoaded || state.isLoading) return null;
+    // Returns false on rerender
+    if (state.isLoading) return null;
 
     return (
       <NavigationContainer
         linking={linking}
-        onReady={onReady}
+        onReady={async () => await SplashScreen.hideAsync()}
         theme={colorScheme === 'dark' ? MyDarkTheme : MyLightTheme}
       >
         <AppContext.Provider value={appContext}>

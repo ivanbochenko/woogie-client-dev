@@ -4,7 +4,6 @@
     "slug": "woogie-client-dev",
     "version": "1.11.1",
     "scheme": "woogie",
-    "originalFullName": "@bochenko/woogie",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -22,7 +21,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.woogie.app",
-      "buildNumber": "1"
+      "buildNumber": "2"
     },
     "android": {
       "adaptiveIcon": {
