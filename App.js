@@ -1,20 +1,185 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useReducer, useEffect, useMemo, useRef, useCallback } from 'react'
+import { useColorScheme } from 'react-native'
+import { NavigationContainer } from '@react-navigation/native'
+import * as SplashScreen from 'expo-splash-screen'
+import * as Notifications from 'expo-notifications'
+import * as SecureStore from 'expo-secure-store'
+import { useFonts, Lato_400Regular, Lato_700Bold } from '@expo-google-fonts/lato'
+import { Provider } from 'urql'
+import { AppContext } from 'lib/AppContext'
+import { gqlClient, apiClient } from 'lib/Client'
+import { registerForPushNotificationsAsync } from 'lib/Notification'
+import { getLocation } from 'lib/Location'
+import { MyDarkTheme, MyLightTheme } from 'constants/Colors'
+import { RootNavigator } from 'screens/RootNavigator'
+import LoginNavigator from 'screens/login/LoginNavigator'
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+SplashScreen.preventAutoHideAsync();
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
 });
+
+export default () => {
+  try {
+    const initialState = {
+      isLoading: true,
+      id: null,
+      token: null,
+      location: null,
+      maxDistance: null,
+      notification: null
+    }
+    // State management
+    const reduce = (prevState, action) => {
+      switch (action.type) {
+        case 'SIGN_IN':
+          return {
+            ...prevState,
+            isLoading: false,
+            ...action.data,
+          }
+        case 'SIGN_OUT':
+          return {
+            ...initialState,
+            isLoading: false,
+          }
+        case 'SET_DATA':
+          return {
+            ...prevState,
+            ...action.data,
+          }
+      }
+    }
+    const [state, dispatch] = useReducer(reduce, initialState)
+    
+    const notificationListener = useRef()
+    const responseListener = useRef()
+
+    const colorScheme = useColorScheme()
+
+    const api = apiClient(state.token)
+    const client = gqlClient(state.token)
+
+    const loginWithToken = async () => {
+      let shouldSignOut = true
+      const token = await SecureStore.getItemAsync('token')
+      if (token) {
+        const pushToken = await registerForPushNotificationsAsync()
+        const { status, data } = await api.post(`login`, {token, pushToken})
+        if (status === 200) {
+          const { location, maxDistance } = await getLocation()
+          dispatch({
+            type: 'SIGN_IN',
+            data: {
+              token: data.token,
+              id: data.id,
+              location,
+              maxDistance
+            }
+          })
+          await SecureStore.setItemAsync('token', token)
+          shouldSignOut = false
+        }
+      }
+      if (shouldSignOut) dispatch({ type: 'SIGN_OUT' })
+    }
+
+    useEffect(() => {
+
+      loginWithToken()
+
+      // This listener is fired whenever a notification is received while the app is foregrounded
+      notificationListener.current = Notifications.addNotificationReceivedListener(
+        notification => {
+          dispatch({type: 'SET_DATA', data: {notification}})
+        }
+      )
+
+      // This listener is fired whenever a user taps on or interacts with a notification
+      // works when app is foregrounded, backgrounded, or killed
+      responseListener.current = Notifications.addNotificationResponseReceivedListener(
+        response => {
+          console.error(response)
+        }
+      )
+
+      return () => {
+        Notifications.removeNotificationSubscription(notificationListener.current)
+        Notifications.removeNotificationSubscription(responseListener.current)
+      }
+    }, [])
+
+    const appContext = useMemo(() => ({
+
+      api,
+      
+      getState: () => state,
+
+      signIn: async ({token, id}) => {
+        dispatch({ type: 'SIGN_IN', data: { token, id } })
+        await SecureStore.setItemAsync('token', token)
+      },
+
+      signOut: async () => {
+        dispatch({ type: 'SIGN_OUT' })
+        await SecureStore.deleteItemAsync('token')
+      },
+
+      setMaxDistance: async (maxDistance) => {
+        dispatch({ type: 'SET_DATA', data: { maxDistance }})
+        await SecureStore.setItemAsync('maxDistance', JSON.stringify(maxDistance))
+      },
+
+    }), [state])
+
+    const linking = {
+      prefixes: ['https://woogie.com', 'woogie://'],
+      config: {
+        screens: {
+          Home: 'Root',
+        },
+      },
+    }
+    
+    const [fontsLoaded, fontsError] = useFonts({
+      Lato_400Regular,
+      Lato_700Bold
+    });
+
+    const onReady = useCallback(async () => {
+      if (fontsLoaded) {
+        await SplashScreen.hideAsync();
+      }
+    }, [fontsLoaded]);
+
+    // Debug
+    apiClient().post('error', {fontsLoaded, fontsError})
+
+    if (!fontsLoaded || state.isLoading) return null;
+
+    return (
+      <NavigationContainer
+        linking={linking}
+        onReady={onReady}
+        theme={colorScheme === 'dark' ? MyDarkTheme : MyLightTheme}
+      >
+        <AppContext.Provider value={appContext}>
+          {state.token ?
+            <Provider value={client}>
+              <RootNavigator/>
+            </Provider>
+            :
+            <LoginNavigator/>
+          }
+        </AppContext.Provider>
+      </NavigationContainer>
+    )
+  } catch (error) {
+    apiClient().post('error', error)
+  }
+}
