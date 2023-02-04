@@ -4,8 +4,8 @@ import { useMutation } from 'urql';
 import { AppContext } from 'lib/AppContext'
 import { getLocation } from 'lib/Location'
 import { Fade } from "components/Loading";
-import CardStack from 'components/CardStack';
 import { Text } from 'components/Typography'
+import { CardStack } from 'components/CardStack';
 
 export default () => {
   const { api } = useContext(AppContext)

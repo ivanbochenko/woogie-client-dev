@@ -13,7 +13,7 @@ import Card from './Card';
 
 const CIRCLE_RADIUS = 96
 
-export default ({events, children, onSwipeRight, onSwipeLeft}) => {
+export const CardStack = ({events, children, onSwipeRight, onSwipeLeft}) => {
   const [remainingEvents, setRemainingEvents] = useState(events)
   useEffect(() => {
     setRemainingEvents(events)
