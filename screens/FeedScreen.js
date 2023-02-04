@@ -7,18 +7,12 @@ import { Fade } from "components/Loading";
 import CardStack from 'components/CardStack';
 import { Text } from 'components/Typography'
 
-const matchMutation = `
-  mutation ($user_id: ID!, $event_id: ID!) {
-    createMatch(event_id: $event_id, user_id: $user_id) {
-      id
-    }
-  }
-`
-
 export default () => {
   const { api } = useContext(AppContext)
   const { id, location, maxDistance } = useContext(AppContext).getState()
   const [events, setEvents] = useState(null)
+  const [matchResult, match] = useMutation(matchMutation)
+
   // Get location and fetch close events
   useEffect(() => {
     (async () => {
@@ -30,8 +24,6 @@ export default () => {
       }
     })()
   }, [location, maxDistance])
-
-  const [matchResult, match] = useMutation(matchMutation)
 
   const onSwipeRight = async (event_id) => {
     await match({user_id: id, event_id, dismissed: false})
@@ -55,6 +47,7 @@ export default () => {
     </SafeAreaView>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -62,3 +55,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   }
 });
+
+const matchMutation = `
+  mutation ($user_id: ID!, $event_id: ID!) {
+    createMatch(event_id: $event_id, user_id: $user_id) {
+      id
+    }
+  }
+`
