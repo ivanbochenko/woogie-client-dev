@@ -159,12 +159,9 @@ export default () => {
         theme={colorScheme === 'dark' ? MyDarkTheme : MyLightTheme}
       >
         <AppContext.Provider value={appContext}>
-          {state.token ?
-            <Provider value={client}>
-              <RootNavigator/>
-            </Provider>
-            :
-            <LoginNavigator/>
+          {state.token
+            ? <Provider value={client} children={<RootNavigator/>}/>
+            : <LoginNavigator/>
           }
         </AppContext.Provider>
       </NavigationContainer>
