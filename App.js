@@ -150,22 +150,24 @@ export default () => {
 
     }), [state])
 
-    if (state.isLoading || !fontsLoaded) return null
-
-    return (
-      <NavigationContainer
-        linking={linking}
-        onReady={async () => await SplashScreen.hideAsync()}
-        theme={colorScheme === 'dark' ? MyDarkTheme : MyLightTheme}
-      >
-        <AppContext.Provider value={appContext}>
-          {state.token
-            ? <Provider value={client} children={<RootNavigator/>}/>
-            : <LoginNavigator/>
-          }
-        </AppContext.Provider>
-      </NavigationContainer>
-    )
+    if (state.isLoading || !fontsLoaded) {
+      return null
+    } else {
+      return (
+        <NavigationContainer
+          linking={linking}
+          onReady={async () => await SplashScreen.hideAsync()}
+          theme={colorScheme === 'dark' ? MyDarkTheme : MyLightTheme}
+        >
+          <AppContext.Provider value={appContext}>
+            {state.token
+              ? <Provider value={client} children={<RootNavigator/>}/>
+              : <LoginNavigator/>
+            }
+          </AppContext.Provider>
+        </NavigationContainer>
+      )
+    }
   } catch (error) {
     apiClient().post('error', error)
   }
