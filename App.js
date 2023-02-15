@@ -77,34 +77,33 @@ export default () => {
       },
     }
 
-    const loginWithToken = async () => {
-      let shouldSignOut = true
-      const token = await SecureStore.getItemAsync('token')
-      // await Font.loadAsync(fonts)
-      if (token) {
-        const pushToken = await registerForPushNotificationsAsync()
-        const { status, data } = await api.post(`login`, {token, pushToken})
-        if (status === 200) {
-          const { location, maxDistance } = await getLocation()
-          dispatch({
-            type: 'SIGN_IN',
-            data: {
-              token: data.token,
-              id: data.id,
-              location,
-              maxDistance
-            }
-          })
-          await SecureStore.setItemAsync('token', token)
-          shouldSignOut = false
-        }
-      }
-      if (shouldSignOut) dispatch({ type: 'SIGN_OUT' })
-    }
-
     useEffect(() => {
 
-      loginWithToken()
+      const loginWithToken = async () => {
+        let shouldSignOut = true
+        const token = await SecureStore.getItemAsync('token')
+        if (token) {
+          const pushToken = await registerForPushNotificationsAsync()
+          const { status, data } = await api.post(`login`, {token, pushToken})
+          if (status === 200) {
+            const { location, maxDistance } = await getLocation()
+            dispatch({
+              type: 'SIGN_IN',
+              data: {
+                token: data.token,
+                id: data.id,
+                location,
+                maxDistance
+              }
+            })
+            await SecureStore.setItemAsync('token', token)
+            shouldSignOut = false
+          }
+        }
+        if (shouldSignOut) dispatch({ type: 'SIGN_OUT' })
+      };
+
+      loginWithToken().catch(error => api.post('error', error));
 
       // This listener is fired whenever a notification is received while the app is foregrounded
       notificationListener.current = Notifications.addNotificationReceivedListener(
