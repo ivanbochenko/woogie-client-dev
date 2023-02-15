@@ -14,6 +14,7 @@ import { MyDarkTheme, MyLightTheme } from 'constants/Colors'
 import { fonts } from 'constants/Fonts'
 import { RootNavigator } from 'screens/RootNavigator'
 import LoginNavigator from 'screens/login/LoginNavigator'
+import { Splash } from 'components/Loading'
 
 SplashScreen.preventAutoHideAsync();
 
@@ -75,9 +76,15 @@ export default () => {
     }
 
     useEffect(() => {
-      let shouldSignOut = true
+      
+      if (fontsLoaded) {
+        // Hide the splash screen after the fonts have loaded and the
+        // UI is ready.
+        SplashScreen.hideAsync();
+      }
 
       const loginWithToken = async () => {
+        let shouldSignOut = true
         const token = await SecureStore.getItemAsync('token')
         if (token) {
           const pushToken = await registerForPushNotificationsAsync()
@@ -97,11 +104,14 @@ export default () => {
             shouldSignOut = false
           }
         }
+        if (shouldSignOut) {
+          dispatch({ type: 'SIGN_OUT' })
+        }
       };
 
-      loginWithToken().catch(error => api.post('error', error));
-      
-      if (shouldSignOut) dispatch({ type: 'SIGN_OUT' });
+      if (state.isLoading) {
+        loginWithToken().catch(error => api.post('error', error))        
+      }
 
       // This listener is fired whenever a notification is received while the app is foregrounded
       notificationListener.current = Notifications.addNotificationReceivedListener(
@@ -121,14 +131,6 @@ export default () => {
       return () => {
         Notifications.removeNotificationSubscription(notificationListener.current)
         Notifications.removeNotificationSubscription(responseListener.current)
-      }
-    }, [])
-
-    useEffect(() => {
-      if (fontsLoaded) {
-        // Hide the splash screen after the fonts have loaded and the
-        // UI is ready.
-        SplashScreen.hideAsync();
       }
     }, [fontsLoaded])
 
@@ -156,7 +158,7 @@ export default () => {
     }), [state])
 
     if (state.isLoading || !fontsLoaded) {
-      return null
+      return <Splash/>
     } else {
       return (
         <NavigationContainer
