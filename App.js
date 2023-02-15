@@ -60,11 +60,8 @@ export default () => {
     
     const notificationListener = useRef()
     const responseListener = useRef()
-
-    // Returns false on rerender
     const [fontsLoaded] = useFonts(fonts)
     const colorScheme = useColorScheme()
-
     const api = apiClient(state.token)
     const client = gqlClient(state.token)
 
@@ -163,7 +160,6 @@ export default () => {
       return (
         <NavigationContainer
           linking={linking}
-          // onReady={() => SplashScreen.hideAsync()}
           theme={colorScheme === 'dark' ? MyDarkTheme : MyLightTheme}
         >
           <AppContext.Provider value={appContext}>
