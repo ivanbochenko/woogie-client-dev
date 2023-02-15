@@ -28,6 +28,7 @@ Notifications.setNotificationHandler({
 
 export default () => {
   try {
+    // State
     const initialState = {
       isLoading: true,
       id: null,
@@ -36,7 +37,6 @@ export default () => {
       maxDistance: null,
       notification: null
     }
-    // State management
     const reduce = (prevState, action) => {
       switch (action.type) {
         case 'SIGN_IN':
@@ -61,10 +61,16 @@ export default () => {
     
     const notificationListener = useRef()
     const responseListener = useRef()
-    const [fontsLoaded] = useFonts(fonts)
     const colorScheme = useColorScheme()
     const api = apiClient(state.token)
     const client = gqlClient(state.token)
+    const [fontsLoaded] = useFonts(fonts)
+    
+    useEffect(() => {
+      if (fontsLoaded) {
+        SplashScreen.hideAsync();
+      }
+    }, [fontsLoaded])
 
     const linking = {
       prefixes: ['https://woogie.com', 'woogie://'],
@@ -76,12 +82,6 @@ export default () => {
     }
 
     useEffect(() => {
-      
-      if (fontsLoaded) {
-        // Hide the splash screen after the fonts have loaded and the
-        // UI is ready.
-        SplashScreen.hideAsync();
-      }
 
       const loginWithToken = async () => {
         let shouldSignOut = true
@@ -132,7 +132,7 @@ export default () => {
         Notifications.removeNotificationSubscription(notificationListener.current)
         Notifications.removeNotificationSubscription(responseListener.current)
       }
-    }, [fontsLoaded])
+    }, [])
 
     const appContext = useMemo(() => ({
 
