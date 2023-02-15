@@ -127,6 +127,14 @@ export default () => {
       }
     }, [])
 
+    useEffect(() => {
+      if (fontsLoaded) {
+        // Hide the splash screen after the fonts have loaded and the
+        // UI is ready.
+        SplashScreen.hideAsync();
+      }
+    }, [fontsLoaded])
+
     const appContext = useMemo(() => ({
 
       api,
@@ -150,13 +158,13 @@ export default () => {
 
     }), [state])
 
-    if (state.isLoading || !fontsLoaded) {
+    if (state.isLoading) {
       return null
     } else {
       return (
         <NavigationContainer
           linking={linking}
-          onReady={async () => await SplashScreen.hideAsync()}
+          // onReady={() => SplashScreen.hideAsync()}
           theme={colorScheme === 'dark' ? MyDarkTheme : MyLightTheme}
         >
           <AppContext.Provider value={appContext}>
