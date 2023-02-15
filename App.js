@@ -75,9 +75,9 @@ export default () => {
     }
 
     useEffect(() => {
+      let shouldSignOut = true
 
       const loginWithToken = async () => {
-        let shouldSignOut = true
         const token = await SecureStore.getItemAsync('token')
         if (token) {
           const pushToken = await registerForPushNotificationsAsync()
@@ -97,10 +97,11 @@ export default () => {
             shouldSignOut = false
           }
         }
-        if (shouldSignOut) dispatch({ type: 'SIGN_OUT' })
       };
 
       loginWithToken().catch(error => api.post('error', error));
+      
+      if (shouldSignOut) dispatch({ type: 'SIGN_OUT' });
 
       // This listener is fired whenever a notification is received while the app is foregrounded
       notificationListener.current = Notifications.addNotificationReceivedListener(
@@ -154,7 +155,7 @@ export default () => {
 
     }), [state])
 
-    if (state.isLoading) {
+    if (state.isLoading || !fontsLoaded) {
       return null
     } else {
       return (
