@@ -77,6 +77,7 @@ export default () => {
       config: {
         screens: {
           Home: 'Root',
+          Login: 'Login'
         },
       },
     }
