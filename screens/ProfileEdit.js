@@ -3,7 +3,6 @@ import { StyleSheet, View, Pressable, ScrollView, SafeAreaView, Alert } from 're
 import { useTheme, useNavigation } from '@react-navigation/native';
 import * as ImagePicker from "expo-image-picker";
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
-import Constants from "expo-constants";
 import {Button, Square} from 'components/Button';
 import { Avatar } from 'components/Avatar';
 import BottomSheet from 'components/BottomSheet';
@@ -12,6 +11,7 @@ import { AppContext } from 'lib/AppContext'
 import { useMutation } from 'urql';
 import { s, m, l, xl } from 'constants/Spaces';
 import { Text, Input } from 'components/Typography'
+import * as Device from 'expo-device'
 
 const EditUser =`
   mutation ($id: ID!, $name: String!, $bio: String, $age: Int!, $sex: String!, $avatar: String) {
@@ -33,7 +33,7 @@ export default ({route}) => {
 
   useEffect(() => {
     (async () => {
-      if (Constants.platform.ios) {
+      if (Device.osName === "iOS") {
         const cameraRollStatus = await ImagePicker.requestMediaLibraryPermissionsAsync();
         const cameraStatus = await ImagePicker.requestCameraPermissionsAsync();
         if ( cameraRollStatus.status !== "granted" || cameraStatus.status !== "granted" ) {
