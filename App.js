@@ -82,9 +82,9 @@ export default () => {
       },
     }
 
-    // Login
     useEffect(() => {
-
+      
+      // Login
       const loginWithToken = async () => {
         let shouldSignOut = true
         const token = await SecureStore.getItemAsync('token')
