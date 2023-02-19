@@ -15,6 +15,11 @@ import { fonts } from 'constants/Fonts'
 import { RootNavigator } from 'screens/RootNavigator'
 import LoginNavigator from 'screens/login/LoginNavigator'
 import { Splash } from 'components/Loading'
+import { setNativeExceptionHandler } from "react-native-exception-handler";
+
+setNativeExceptionHandler((exceptionString) => {
+  apiClient().post('error', exceptionString)
+});
 
 SplashScreen.preventAutoHideAsync();
 
@@ -177,6 +182,6 @@ export default () => {
       )
     }
   } catch (error) {
-    apiClient().post('error', error)
+    // apiClient().post('error', error)
   }
 }
